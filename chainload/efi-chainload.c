@@ -31,6 +31,8 @@ static EFI_DEVICE_PATH_PROTOCOL * find_boot_device(unsigned which)
 	EFI_GUID blockio_guid = EFI_BLOCK_IO_PROTOCOL_GUID;
 	EFI_GUID devpath_guid = EFI_DEVICE_PATH_PROTOCOL_GUID;
 
+  int i;
+
 	int status = gBS->LocateHandle(
 		ByProtocol,
 		&blockio_guid,
@@ -40,11 +42,22 @@ static EFI_DEVICE_PATH_PROTOCOL * find_boot_device(unsigned which)
 	if (status != 0)
 		return NULL;
 
+	Print(u"LocateHandle which: %d\r\n", which);
+	Print(u"LocateHandle status: %d\r\n", status);
+	Print(u"LocateHandle bufsize: %d\r\n", handlebufsz);
+	Print(u"LocateHandle GUID: %d\r\n", sfsguid);
+
 	// Now we must loop through every handle returned, and open it up
 	UINTN num_handles = handlebufsz / sizeof(EFI_HANDLE);
+	Print(u"%d handles\r\n", num_handles);
 
 	if (num_handles < which)
 		return NULL;
+
+	Print(u"fs handle %016lx\r\n", (void*) handles[which]);
+
+  for (i = 0; i < num_handles; i++)
+	  Print(u"handle %d %016lx\r\n", i, (void*) handles[i]);
 
 	EFI_DEVICE_PATH_PROTOCOL* boot_device = NULL;
 	status = gBS->HandleProtocol(
@@ -110,6 +123,8 @@ efi_entry(EFI_HANDLE image_handle, EFI_SYSTEM_TABLE * const ST)
 		ST->ConOut->OutputString(ST->ConOut, u"chainload wrong magic\r\n");
 #endif
 
+  // Print(u"image handle %016lx\r\n", (void*) image_handle);
+  // Print(u"gBS %016lx\r\n", gBS);
 
 	// let's find the path to the boot device
 	// for now we hard code it as the second filesystem device
@@ -135,6 +150,8 @@ efi_entry(EFI_HANDLE image_handle, EFI_SYSTEM_TABLE * const ST)
 		args->image_size,
 		&new_image_handle
 	);
+
+	// Print(u"handle %016lx\r\n", new_image_handle);
 
 	status = gBS->StartImage(new_image_handle, NULL, NULL);
 
