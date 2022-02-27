@@ -48,6 +48,7 @@ symlink bash bin/sh
 ../build/chainload/chainload
 ../chainload/boot.sh
 ../config/RamDiskDxe.efi
+../boot
 
 # hack to bring in tpm2 from safeboot build
 #../../bin/tpm2
