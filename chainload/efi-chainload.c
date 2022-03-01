@@ -43,9 +43,12 @@ static EFI_DEVICE_PATH_PROTOCOL * find_boot_device(unsigned which)
 		return NULL;
 
 	Print(u"LocateHandle which: %d\r\n", which);
-	Print(u"LocateHandle status: %d\r\n", status);
+	Print(u"LocateHandle status: %r\r\n", status);
+	DumpHex(3, 0, 8, &status);
 	Print(u"LocateHandle bufsize: %d\r\n", handlebufsz);
-	Print(u"LocateHandle GUID: %d\r\n", sfsguid);
+	DumpHex(3, 0, 16, &handlebufsz);
+	Print(u"LocateHandle GUID: %g\r\n", &sfsguid);
+	DumpHex(3, 0, 16, &sfsguid);
 
 	// Now we must loop through every handle returned, and open it up
 	UINTN num_handles = handlebufsz / sizeof(EFI_HANDLE);
@@ -54,10 +57,11 @@ static EFI_DEVICE_PATH_PROTOCOL * find_boot_device(unsigned which)
 	if (num_handles < which)
 		return NULL;
 
-	Print(u"fs handle %016lx\r\n", (void*) handles[which]);
+	Print(u"fs handle %s\r\n", (void*) handles[which]);
+	DumpHex(3, 0, handlebufsz, handles);
 
   for (i = 0; i < num_handles; i++)
-	  Print(u"handle %d %016lx\r\n", i, (void*) handles[i]);
+	  Print(u"handle %d %16.0lx\r\n", i, (void*) &handles[i]);
 
 	EFI_DEVICE_PATH_PROTOCOL* boot_device = NULL;
 	status = gBS->HandleProtocol(
@@ -125,6 +129,12 @@ efi_entry(EFI_HANDLE image_handle, EFI_SYSTEM_TABLE * const ST)
 
   // Print(u"image handle %016lx\r\n", (void*) image_handle);
   // Print(u"gBS %016lx\r\n", gBS);
+	Print(L"image handle %s\r\n", (void*) image_handle);
+	Print(L"gBS %016lx\r\n", gBS);
+	DumpHex(3, 0, 256, ST + 2048 * 0);
+	DumpHex(3, 0, 256, ST + 2048 * 1);
+	DumpHex(3, 0, 256, ST + 2048 * 2);
+	DumpHex(3, 0, 256, ST + 2048 * 3);
 
 	// let's find the path to the boot device
 	// for now we hard code it as the second filesystem device
